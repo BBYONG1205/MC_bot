@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands 
 from typing import Literal
-from bot_command import 멤버등록, 정보, 복사, 시세_확인
+from bot_command import 멤버등록, 정보, 복사, 시세_확인,시세_변동
 
 
 f = open('token.txt', 'r')
@@ -41,6 +41,10 @@ async def member_info(interaction: discord.Interaction, 유저:discord.Member):
 @tree.command(name='시세', description='자원의 시세를 검색합니다.')
 async def market_price(interaction: discord.Interaction, 품목명 : str):
     await 시세_확인(interaction, 품목명)
+
+@tree.command(name='시세변동', description='변동된 시세를 반영합니다.')
+async def mp_update(interaction:discord.Interaction, 품목명 : str, 세트가격 : int):
+    await 시세_변동(interaction, 품목명, 세트가격)
 
 #@tree.command(name='정산요청', description='수집한 자원에 대해 정산 요청을 전송합니다.')
 

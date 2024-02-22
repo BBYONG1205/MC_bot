@@ -35,6 +35,15 @@ def 멤버정보_임베드(유저):
     return embed
 
 
+def 광물시세_임베드(품목명, 개당_가격, 한세트_가격,한블럭_가격,블럭세트_가격):
+
+    embed = discord.Embed(title=f"{품목명} 시세💰", color=0xffffff)
+    embed.add_field(name=f"**개당** `{개당_가격}원`", value = "", inline=False)
+    embed.add_field(name=f"**1 세트** `{한세트_가격}원`",value="", inline=False)
+    embed.add_field(name=f"**1 블럭** `{한블럭_가격}원`",value="", inline=False)
+    embed.add_field(name=f"**블럭 1 세트** `{블럭세트_가격}원`",value="", inline=False)
+    return embed
+
 def 정산요청서_광부(유저):
 
 

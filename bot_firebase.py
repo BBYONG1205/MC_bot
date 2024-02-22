@@ -25,3 +25,11 @@ def 시세_불러오기(자원):
         return doc.to_dict()
     else:
         return None
+    
+
+def 시세_업데이트(자원, 품목명, 변동가격):
+
+    user_ref = db.collection('시세표').document(str(자원))
+    update_marketprice = {품목명 : 변동가격}
+
+    user_ref.update(update_marketprice)
