@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands 
 from typing import Literal
-from bot_command import 멤버등록
+from bot_command import 멤버등록, 정보
 
 
 f = open('token.txt', 'r')
@@ -30,6 +30,8 @@ tree = app_commands.CommandTree(client)
 async def register_member(interaction: discord.Interaction, 유저:discord.Member, 닉네임:str, 직업: Literal["광부", "농부", "어부", "요리사"], 마크아이디: str):
     await 멤버등록(interaction, 유저, 닉네임, 직업, 마크아이디)
 
-
+@tree.command(name ='정보', description='등록된 멤버의 정보를 확인합니다.')
+async def member_info(interaction: discord.Interaction, 유저:discord.Member):
+    await 정보(interaction, 유저)
 
 client.run(token)
