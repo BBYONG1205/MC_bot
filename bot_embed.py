@@ -33,3 +33,14 @@ def 멤버정보_임베드(유저):
             embed.set_thumbnail(url="https://i.ibb.co/Vm2Gx5w/image.jpg")
      
     return embed
+
+
+def 정산요청서_광부(유저):
+
+
+
+    embed = discord.Embed(title=f":clipboard: **정산 요청서**", color=0xffffff)
+    embed.add_field(name=f"**광물**",value=":heart:레드스톤\n:blue_heart:청금석\n:brown_heart:구리\n:white_heart:철\n:yellow_heart:금\n:gem:다이아", inline=True)
+    embed.add_field(name=f"**수량**",value=f"{레드스톤_수량}\n{청금석_수량}\n{구리_수량}\n{철_수량}\n{금_수량}\n{다이아_수량}", inline=True)
+
+    

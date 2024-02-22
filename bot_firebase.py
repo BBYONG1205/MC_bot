@@ -17,3 +17,11 @@ def 멤버정보_불러오기(member_id):
         return doc.to_dict()
     else:
         return None
+    
+def 시세_불러오기(자원):
+    doc_ref = db.collection('시세표').document(str(자원))
+    doc = doc_ref.get()
+    if doc.exists:
+        return doc.to_dict()
+    else:
+        return None
