@@ -1,8 +1,9 @@
 import discord
 from typing import Literal
-from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_불러오기, 시세_업데이트, 정산요청서_생성, 정산요청내역_업데이트, 정산요청서_불러오기
+from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_불러오기, 시세_업데이트, 정산요청서_생성, 정산요청내역_업데이트, 정산요청서_불러오기, 정산요청내역_삭제
 from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드, 정산요청서
 from bot_marketprice import 자원시세_계산
+from bot_button import 정산버튼
 import pyperclip
 
 
@@ -21,10 +22,9 @@ async def 멤버등록(interaction: discord.Interaction, 유저:discord.Member, 
     
     
     멤버정보 = {"유저":유저.global_name, "닉네임": 닉네임, "직업" : 직업, "마크 아이디": 마크아이디}
-    요청자 = f"{닉네임}님의 정산 요청 내역"
-    총금액 = {"총 합" : 0}
+
     멤버정보_저장(유저.id, 멤버정보)
-    정산요청서_생성(요청자, 총금액)
+
     
     embed = 멤버정보_임베드(유저)
 
@@ -72,6 +72,7 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
     기존등록멤버 = 멤버정보_불러오기(정산요청자)
     정산요청자_닉네임 = 기존등록멤버.get("닉네임")
     요청자 = f"{정산요청자_닉네임}님의 정산 요청 내역"
+    요청서_불러오기=정산요청서_불러오기(요청자)
        
     if 세트 == 0 :
 
@@ -101,7 +102,13 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
     if 기존등록멤버 is None:
         await interaction.response.send_message("멤버 등록이 되어있지 않아 정산 요청 작업에 실패하였습니다.", ephemeral=True)
         return
-          
+
+    if 요청서_불러오기 is None:
+
+        총금액 = {"총 합" : 0}
+        
+        정산요청서_생성(요청자, 총금액)
+    
     if "블럭" in 품목명:
         
         자원 = "광물"
@@ -122,7 +129,7 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
         요청내역 = 갯수, f"{금액}원"
 
         요청금액_합계 = 정산요청서_불러오기(요청자).get("총 합") + 금액
-
+        
         정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계)
 
         embed = 정산요청서(품목명,갯수,금액,요청금액_합계)
@@ -254,3 +261,37 @@ async def 시세_변동(interaction:discord.Interaction, 품목명 : str, 세트
 
     await interaction.response.send_message(f"다음과 같이 시세가 변동되었습니다. \n**{이전시세} → {변경시세}**")
     return
+
+#ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+async def 정산(interaction: discord.Interaction, 멤버 : discord.Member):
+
+    멤버정보 = 멤버정보_불러오기(멤버.id)
+
+    if 멤버정보 is None:
+        await interaction.response.send_message("멤버 등록이 되어있지 않은 유저입니다.", ephemeral=True)
+        return    
+    
+    요청자_닉네임 = 멤버정보.get("닉네임")
+    요청자 = f"{요청자_닉네임}님의 정산 요청 내역"
+    요청내역_확인 =  정산요청서_불러오기(요청자)
+
+    if 요청내역_확인 is None:
+
+        await interaction.response.send_message(f"{요청자_닉네임}님이 요청하신 미정산 내역이 없습니다.", ephemeral=True)
+        return
+    
+    요청금액_확인 = 정산요청서_불러오기(요청자).get("총 합")
+    오청금액_총합 = "{:,}".format(요청금액_확인)
+
+    embed = discord.Embed(title=f"**{요청자_닉네임}님의 정산 요청 금액** :clipboard:", color=0xffffff)
+    embed.add_field(name=f"**총 정산 금액**",value=f"{오청금액_총합}원", inline=False)
+
+    view = 정산버튼(요청자,멤버)
+
+    await interaction.response.send_message(f"{요청자_닉네임}님의 정산 요청 금액을 정산하시겠습니까?", embed = embed, view =view )
+
+
+
+
+

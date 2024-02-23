@@ -57,3 +57,7 @@ def 정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청�
     }
 
     user_ref.update(update_Settlement)
+
+def 정산요청내역_삭제(요청자):
+    doc_ref = db.collection('정산 요청서').document(str(요청자))
+    doc_ref.delete()
