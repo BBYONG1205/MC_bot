@@ -9,6 +9,7 @@ db = firestore.client()
 def 멤버정보_저장(member_id, 멤버정보):
     doc_ref = db.collection('멤버 정보').document(str(member_id))
     doc_ref.set(멤버정보)
+    
 
 def 멤버정보_불러오기(member_id):
     doc_ref = db.collection('멤버 정보').document(str(member_id))
@@ -33,3 +34,13 @@ def 시세_업데이트(자원, 품목명, 변동가격):
     update_marketprice = {품목명 : 변동가격}
 
     user_ref.update(update_marketprice)
+
+def 정산요청서_생성(요청자, 요청자정보):
+    doc_ref = db.collection('정산 요청서').document(str(요청자))
+    doc_ref.set(요청자정보)
+
+def 정산요청내역_업데이트(요청자, 품목명, 요청내역):
+    user_ref = db.collection('정산 요청서').document(str(요청자))
+    update_Settlement = {품목명 : 요청내역}
+
+    user_ref.update(update_Settlement)

@@ -44,12 +44,20 @@ def 광물시세_임베드(품목명, 개당_가격, 한세트_가격,한블럭_
     embed.add_field(name=f"**블럭 1 세트** `{블럭세트_가격}원`",value="", inline=False)
     return embed
 
-def 정산요청서_광부(유저):
+def 일반시세_임베드(품목명, 개당_가격, 한세트_가격):
+
+    embed = discord.Embed(title=f"{품목명} 시세💰", color=0xffffff)
+    embed.add_field(name=f"**개당** `{개당_가격}원`", value = "", inline=False)
+    embed.add_field(name=f"**1 세트** `{한세트_가격}원`",value="", inline=False)
+    return embed
+
+def 정산요청서_광부(자원, 세트계산, 개당계산):
 
 
 
     embed = discord.Embed(title=f":clipboard: **정산 요청서**", color=0xffffff)
     embed.add_field(name=f"**광물**",value=":heart:레드스톤\n:blue_heart:청금석\n:brown_heart:구리\n:white_heart:철\n:yellow_heart:금\n:gem:다이아", inline=True)
     embed.add_field(name=f"**수량**",value=f"{레드스톤_수량}\n{청금석_수량}\n{구리_수량}\n{철_수량}\n{금_수량}\n{다이아_수량}", inline=True)
+    embed.add_field(name=f"**금액**",value=f"{레드스톤_금액}\n{청금석_금액}\n{구리_금액}\n{철_금액}\n{금_금액}\n{다이아_금액}", inline=True)
 
     
