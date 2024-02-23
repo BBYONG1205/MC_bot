@@ -35,12 +35,25 @@ def 시세_업데이트(자원, 품목명, 변동가격):
 
     user_ref.update(update_marketprice)
 
-def 정산요청서_생성(요청자, 요청자정보):
+def 정산요청서_생성(요청자, 총금액):
     doc_ref = db.collection('정산 요청서').document(str(요청자))
-    doc_ref.set(요청자정보)
+    doc_ref.set(총금액)
 
-def 정산요청내역_업데이트(요청자, 품목명, 요청내역):
+
+def 정산요청서_불러오기(요청자):
+    doc_ref = db.collection('정산 요청서').document(str(요청자))
+    doc = doc_ref.get()
+    if doc.exists:
+        return doc.to_dict()
+    else:
+        return None
+
+
+def 정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계):
     user_ref = db.collection('정산 요청서').document(str(요청자))
-    update_Settlement = {품목명 : 요청내역}
+    update_Settlement = {
+        품목명: 요청내역,
+        "총 합": 요청금액_합계
+    }
 
     user_ref.update(update_Settlement)

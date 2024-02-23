@@ -11,7 +11,7 @@ def 멤버정보_임베드(유저):
     
 
     if 기존등록멤버:
-        embed = discord.Embed(title=f"{닉네임}님의 정보", color=0xffffff)
+        embed = discord.Embed(title=f"{닉네임}님의 정보 :identification_card:", color=0xffffff)
 
         if 직업 == "광부":
             embed.add_field(name=f"**직업**  `{직업}` :pick:",value="", inline=False)
@@ -37,7 +37,7 @@ def 멤버정보_임베드(유저):
 
 def 광물시세_임베드(품목명, 개당_가격, 한세트_가격,한블럭_가격,블럭세트_가격):
 
-    embed = discord.Embed(title=f"{품목명} 시세💰", color=0xffffff)
+    embed = discord.Embed(title=f"{품목명} 시세 💰", color=0xffffff)
     embed.add_field(name=f"**개당** `{개당_가격}원`", value = "", inline=False)
     embed.add_field(name=f"**1 세트** `{한세트_가격}원`",value="", inline=False)
     embed.add_field(name=f"**1 블럭** `{한블럭_가격}원`",value="", inline=False)
@@ -46,7 +46,7 @@ def 광물시세_임베드(품목명, 개당_가격, 한세트_가격,한블럭_
 
 def 일반시세_임베드(품목명, 개당_가격, 한세트_가격):
 
-    embed = discord.Embed(title=f"{품목명} 시세💰", color=0xffffff)
+    embed = discord.Embed(title=f"{품목명} 시세 💰", color=0xffffff)
     embed.add_field(name=f"**개당** `{개당_가격}원`", value = "", inline=False)
     embed.add_field(name=f"**1 세트** `{한세트_가격}원`",value="", inline=False)
     return embed
@@ -60,4 +60,15 @@ def 정산요청서_광부(자원, 세트계산, 개당계산):
     embed.add_field(name=f"**수량**",value=f"{레드스톤_수량}\n{청금석_수량}\n{구리_수량}\n{철_수량}\n{금_수량}\n{다이아_수량}", inline=True)
     embed.add_field(name=f"**금액**",value=f"{레드스톤_금액}\n{청금석_금액}\n{구리_금액}\n{철_금액}\n{금_금액}\n{다이아_금액}", inline=True)
 
-    
+
+def 정산요청서(품목명,갯수,금액, 요청금액_합계):
+
+    단위구분_금액 = "{:,}".format(금액)
+    단위구분_총합 = "{:,}".format(요청금액_합계)
+    embed = discord.Embed(title=f"**정산 요청 내역** :clipboard:", color=0xffffff)
+    embed.add_field(name=f"**품목명** `{품목명}`",value="", inline=False)
+    embed.add_field(name=f"**수량** `{갯수}`",value="", inline=False)
+    embed.add_field(name=f"**금액** `{단위구분_금액}원`",value="", inline=False)
+    embed.add_field(name=f"**총 합** `{단위구분_총합}원`",value="", inline=False)
+
+    return embed

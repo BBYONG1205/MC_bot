@@ -1,7 +1,7 @@
 import discord
 from typing import Literal
-from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_불러오기, 시세_업데이트, 정산요청서_생성, 정산요청내역_업데이트
-from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드
+from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_불러오기, 시세_업데이트, 정산요청서_생성, 정산요청내역_업데이트, 정산요청서_불러오기
+from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드, 정산요청서
 from bot_marketprice import 자원시세_계산
 import pyperclip
 
@@ -22,9 +22,9 @@ async def 멤버등록(interaction: discord.Interaction, 유저:discord.Member, 
     
     멤버정보 = {"유저":유저.global_name, "닉네임": 닉네임, "직업" : 직업, "마크 아이디": 마크아이디}
     요청자 = f"{닉네임}님의 정산 요청 내역"
-    요청자정보 = {"직업" : 직업}
+    총금액 = {"총 합" : 0}
     멤버정보_저장(유저.id, 멤버정보)
-    정산요청서_생성(요청자, 요청자정보)
+    정산요청서_생성(요청자, 총금액)
     
     embed = 멤버정보_임베드(유저)
 
@@ -121,9 +121,12 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
 
         요청내역 = 갯수, f"{금액}원"
 
-        정산요청내역_업데이트(요청자, 품목명, 요청내역)
+        요청금액_합계 = 정산요청서_불러오기(요청자).get("총 합") + 금액
 
-        await interaction.response.send_message(f"정산 요청 목록이 추가되었습니다.\n> 품목명 : {품목명}\n> 갯수 : {갯수}\n> 금액 : {금액}원")
+        정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계)
+
+        embed = 정산요청서(품목명,갯수,금액,요청금액_합계)
+        await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed=embed)
         return
 
     if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기:
@@ -143,9 +146,13 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
 
     요청내역 = 갯수,  f"{금액}원"
 
-    정산요청내역_업데이트(요청자, 품목명, 요청내역)
+    요청금액_합계 = 정산요청서_불러오기(요청자).get("총 합") + 금액
+
+    정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계)
     
-    await interaction.response.send_message(f"정산 요청 목록이 추가되었습니다.\n> 품목명 : {품목명}\n> 갯수 : {갯수}\n> 금액 : {금액}원")
+    embed = 정산요청서(품목명,갯수,금액,요청금액_합계)
+    
+    await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed=embed)
     return
 
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
