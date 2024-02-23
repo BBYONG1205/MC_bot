@@ -278,7 +278,7 @@ async def 정산(interaction: discord.Interaction, 멤버 : discord.Member):
 
     if 요청내역_확인 is None:
 
-        await interaction.response.send_message(f"{요청자_닉네임}님이 요청하신 미정산 내역이 없습니다.", ephemeral=True)
+        await interaction.response.send_message(f"{요청자_닉네임}님의 미정산 내역이 없습니다.", ephemeral=True)
         return
     
     요청금액_확인 = 정산요청서_불러오기(요청자).get("총 합")
