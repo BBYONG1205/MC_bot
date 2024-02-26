@@ -51,21 +51,12 @@ def 일반시세_임베드(품목명, 개당_가격, 한세트_가격):
     embed.add_field(name=f"**1 세트** `{한세트_가격}원`",value="", inline=False)
     return embed
 
-def 정산요청서_광부(자원, 세트계산, 개당계산):
 
-
-
-    embed = discord.Embed(title=f":clipboard: **정산 요청서**", color=0xffffff)
-    embed.add_field(name=f"**광물**",value=":heart:레드스톤\n:blue_heart:청금석\n:brown_heart:구리\n:white_heart:철\n:yellow_heart:금\n:gem:다이아", inline=True)
-    embed.add_field(name=f"**수량**",value=f"{레드스톤_수량}\n{청금석_수량}\n{구리_수량}\n{철_수량}\n{금_수량}\n{다이아_수량}", inline=True)
-    embed.add_field(name=f"**금액**",value=f"{레드스톤_금액}\n{청금석_금액}\n{구리_금액}\n{철_금액}\n{금_금액}\n{다이아_금액}", inline=True)
-
-
-def 정산요청서(품목명,갯수,금액, 요청금액_합계):
+def 정산요청서(정산요청자_닉네임,품목명,갯수,금액, 요청금액_합계):
 
     단위구분_금액 = "{:,}".format(금액)
     단위구분_총합 = "{:,}".format(요청금액_합계)
-    embed = discord.Embed(title=f"**정산 요청 내역** :clipboard:", color=0xffffff)
+    embed = discord.Embed(title=f"**{정산요청자_닉네임}님의 정산 요청 내역** :clipboard:", color=0xffffff)
     embed.add_field(name=f"**품목명** `{품목명}`",value="", inline=False)
     embed.add_field(name=f"**수량** `{갯수}`",value="", inline=False)
     embed.add_field(name=f"**금액** `{단위구분_금액}원`",value="", inline=False)

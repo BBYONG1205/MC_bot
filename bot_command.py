@@ -4,6 +4,7 @@ from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_
 from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드, 정산요청서
 from bot_marketprice import 자원시세_계산
 from bot_button import 정산버튼
+from bot_item import 품목_목록, 축약어
 import pyperclip
 
 
@@ -66,7 +67,7 @@ async def 복사(interaction: discord.Interaction, 유저:discord.Member):
 
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트 : int, 나머지 : int):
+async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트 : int):
 
     정산요청자 = interaction.user.id
     기존등록멤버 = 멤버정보_불러오기(정산요청자)
@@ -74,30 +75,22 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
     요청자 = f"{정산요청자_닉네임}님의 정산 요청 내역"
     요청서_불러오기=정산요청서_불러오기(요청자)
        
-    if 세트 == 0 :
 
-        갯수 = f"{나머지}개"
-
-    elif 나머지 == 0:
-
-        갯수 = f"{세트}세트"
-
-    elif 나머지 >= 64 :
-
-        await interaction.response.send_message("나머지 갯수는 64개 미만으로 입력해주시기 바랍니다.\n한 세트의 기준은 64개 입니다.") 
-        return
-    
-    else:
-        갯수 = f"{세트}세트 {나머지}개"
+    갯수 = f"{세트}세트"
 
 
+    축약어_모음 = 축약어()
 
-    광물 = ["청금석","레드스톤","금","철","구리","다이아","금 원석"]
+    광물, 농작물, 물고기, 기타 = 품목_목록()
 
-    농작물 = ["가지","파인애플","홉","토마토","고추","마늘","양배추","배추","포도"]
+    # 입력된 품목명을 축약어로 변환
+    품목명 = 축약어_모음.get(품목명, 품목명)
 
-    물고기 = ["강꼬치고기","개복치","금붕어","농어","다랑어","메기","문어","숭어","연어","잉어","잡어","적색통돔","정어리"]
-
+    # 각 항목에 대한 축약어 적용
+    광물 = [축약어_모음.get(item, item) for item in 광물]
+    농작물 = [축약어_모음.get(item, item) for item in 농작물]
+    물고기 = [축약어_모음.get(item, item) for item in 물고기]
+    기타 = [축약어_모음.get(item, item) for item in 기타]
 
     if 기존등록멤버 is None:
         await interaction.response.send_message("멤버 등록이 되어있지 않아 정산 요청 작업에 실패하였습니다.", ephemeral=True)
@@ -124,7 +117,7 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
         품목명 = f"{품목명} 블럭"
 
 
-        금액 = (블럭세트_가격 * 세트) + (한블럭_가격*나머지)
+        금액 = (블럭세트_가격 * 세트) 
 
         요청내역 = 갯수, f"{금액}원"
 
@@ -136,7 +129,7 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
         await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed=embed)
         return
 
-    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기:
+    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
         await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
         return
     
@@ -149,7 +142,7 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
 
     개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 =자원시세_계산(자원, 품목명)
 
-    금액 = (한세트_가격 * 세트) + (개당_가격 * 나머지)
+    금액 = (한세트_가격 * 세트)
 
     요청내역 = 갯수,  f"{금액}원"
 
@@ -157,80 +150,79 @@ async def 정산요청(interaction: discord.Interaction, 품목명 : str, 세트
 
     정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계)
     
-    embed = 정산요청서(품목명,갯수,금액,요청금액_합계)
+    embed = 정산요청서(정산요청자_닉네임,품목명,갯수,금액,요청금액_합계)
     
     await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed=embed)
     return
 
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
-async def 시세_확인(interaction: discord.Interaction, 품목명 : str):
+async def 시세_확인(interaction: discord.Interaction, 품목명: str):
 
-    광물 = ["청금석","레드스톤","금","철","구리","다이아","금 원석"]
+    축약어_모음 = 축약어()
+    광물, 농작물, 물고기, 기타 = 품목_목록()
 
-    농작물 = ["가지","파인애플","홉","토마토","고추","마늘","양배추","배추","포도"]
+    # 입력된 품목명을 축약어로 변환
+    품목명 = 축약어_모음.get(품목명, 품목명)
 
-    물고기 = ["강꼬치고기","개복치","금붕어","농어","다랑어","메기","문어","숭어","연어","잉어","잡어","적색통돔","정어리"]
-    
-    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기:
-        await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
+    # 각 항목에 대한 축약어 적용
+    광물 = [축약어_모음.get(item, item) for item in 광물]
+    농작물 = [축약어_모음.get(item, item) for item in 농작물]
+    물고기 = [축약어_모음.get(item, item) for item in 물고기]
+    기타 = [축약어_모음.get(item, item) for item in 기타]
+
+    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
+        await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__", ephemeral=True)
         return
     
     if 품목명 in 광물:
-
         if 품목명 == "금 원석":
             자원 = "광물"
             개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
-
             embed = 일반시세_임베드(품목명, 개당_가격, 한세트_가격)
-
-            await interaction.response.send_message(embed=embed)
-            return
-        
-        else:    
-
+        else:
             자원 = "광물"
             개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
-
             embed = 광물시세_임베드(품목명, 개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격)
 
-
-            await interaction.response.send_message(embed=embed)
-            return
-
     if 품목명 in 농작물:
-
         자원 = "농작물"
 
     if 품목명 in 물고기:
-
         자원 = "물고기"
 
-    개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격= 자원시세_계산(자원, 품목명)
+    if 품목명 in 기타:
+        자원 = "기타"
 
+    개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
     embed = 일반시세_임베드(품목명, 개당_가격, 한세트_가격)
-
     await interaction.response.send_message(embed=embed)
 
-    return
-    
     
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 async def 시세_변동(interaction:discord.Interaction, 품목명 : str, 세트가격 : int):
     
-    광물 = ["청금석","레드스톤","금","철","구리","다이아","금 원석"]
 
-    농작물 = ["가지","파인애플","홉","토마토","고추","마늘","양배추","배추","포도"]
+    축약어_모음 = 축약어()
 
-    물고기 = ["강꼬치고기","개복치","금붕어","농어","다랑어","메기","문어","숭어","연어","잉어","잡어","적색통돔","정어리"]
-    
+    광물, 농작물, 물고기, 기타 = 품목_목록()
+
+    # 입력된 품목명을 축약어로 변환
+    품목명 = 축약어_모음.get(품목명, 품목명)
+
+    # 각 항목에 대한 축약어 적용
+    광물 = [축약어_모음.get(item, item) for item in 광물]
+    농작물 = [축약어_모음.get(item, item) for item in 농작물]
+    물고기 = [축약어_모음.get(item, item) for item in 물고기]
+    기타 = [축약어_모음.get(item, item) for item in 기타]
+
     if "블럭" in 품목명:
         광물명 = 품목명.replace("블럭", "").strip()
         세트가격 = 세트가격/9
         품목명 = 광물명
     
-    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기:
+    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
         await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
         return 
     
@@ -245,7 +237,10 @@ async def 시세_변동(interaction:discord.Interaction, 품목명 : str, 세트
     if 품목명 in 물고기 :
 
         자원 = "물고기"
+    
+    if 품목명 in 기타 : 
         
+        자원 = "기타"
 
     변동가격 = round(세트가격 / 64,3)
 

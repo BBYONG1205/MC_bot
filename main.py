@@ -47,12 +47,13 @@ async def mp_update(interaction:discord.Interaction, 품목명 : str, 세트가�
     await 시세_변동(interaction, 품목명, 세트가격)
 
 @tree.command(name='정산요청', description='수집한 자원에 대해 정산 요청을 전송합니다.')
-async def update_settlement(interaction:discord.Interaction, 품목명 : str, 세트 : int, 나머지 : int):
-    await 정산요청(interaction, 품목명, 세트 , 나머지)
+async def update_settlement(interaction:discord.Interaction, 품목명 : str, 세트 : int):
+    await 정산요청(interaction, 품목명, 세트)
 
 @tree.command(name='정산하기', description='선택한 멤버의 정산 요청 금액을 정산합니다.')
 async def complete_settlement(interaction:discord.Interaction, 멤버 : discord.Member):
     await 정산(interaction, 멤버)
+
 
 
 
