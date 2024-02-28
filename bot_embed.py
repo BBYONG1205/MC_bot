@@ -58,7 +58,7 @@ def 정산요청서(정산요청자_닉네임,품목명,갯수,금액, 요청금
     단위구분_총합 = "{:,}".format(요청금액_합계)
     embed = discord.Embed(title=f"**{정산요청자_닉네임}님의 정산 요청 내역** :clipboard:", color=0xffffff)
     embed.add_field(name=f"**품목명** `{품목명}`",value="", inline=False)
-    embed.add_field(name=f"**수량** `{갯수}`",value="", inline=False)
+    embed.add_field(name=f"**수량** `{갯수}세트`",value="", inline=False)
     embed.add_field(name=f"**금액** `{단위구분_금액}원`",value="", inline=False)
     embed.add_field(name=f"**총 합** `{단위구분_총합}원`",value="", inline=False)
 
