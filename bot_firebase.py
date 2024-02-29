@@ -35,9 +35,9 @@ def 시세_업데이트(자원, 품목명, 변동가격):
 
     user_ref.update(update_marketprice)
 
-def 정산요청서_생성(요청자, 총금액):
+def 정산요청서_생성(요청자, 요청서생성):
     doc_ref = db.collection('정산 요청서').document(str(요청자))
-    doc_ref.set(총금액)
+    doc_ref.set(요청서생성)
 
 
 def 정산요청서_불러오기(요청자):
@@ -48,16 +48,34 @@ def 정산요청서_불러오기(요청자):
     else:
         return None
 
+def 정산요청내역_업데이트(요청자, 요청서업데이트,요청금액_합계):
+    doc_ref = db.collection('정산 요청서').document(str(요청자))
+    doc_ref.update({
+            "요청내역": firestore.ArrayUnion([요청서업데이트]),
+            "총 금액" : 요청금액_합계
+        })
+    
 
-def 정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계):
-    user_ref = db.collection('정산 요청서').document(str(요청자))
-    update_Settlement = {
-        품목명: 요청내역,
-        "총 합": 요청금액_합계
-    }
+def 정산요청상세_불러오기(요청자):
+    db = firestore.client()
+    doc_ref = db.collection('정산 요청서').document(str(요청자))
+    doc = doc_ref.get()
 
-    user_ref.update(update_Settlement)
+    if doc.exists:
+        
+        품목_목록 = doc.to_dict().get('요청내역', [])
+        
+        # 모든 참여자의 이름 목록 가져오기
+        품목명_리스트 = [품목.get('품목명', '내역없음') for 품목 in 품목_목록]
+        금액_리스트 = [금액.get('금액', '내역없음') for 금액 in 품목_목록]
+        세트_리스트 = [세트.get('세트', '내역없음') for 세트 in 품목_목록]
+
+        return 품목명_리스트, 금액_리스트 , 세트_리스트
+    else:
+        print('해당 문서가 존재하지 않습니다.')
+
 
 def 정산요청내역_삭제(요청자):
     doc_ref = db.collection('정산 요청서').document(str(요청자))
     doc_ref.delete()
+

@@ -1,5 +1,5 @@
 import discord
-from bot_firebase import 멤버정보_불러오기
+from bot_firebase import 멤버정보_불러오기, 정산요청서_불러오기, 정산요청상세_불러오기
 
 def 멤버정보_임베드(유저):
     
@@ -52,14 +52,24 @@ def 일반시세_임베드(품목명, 개당_가격, 한세트_가격):
     return embed
 
 
-def 정산요청서(정산요청자_닉네임,품목명,갯수,금액, 요청금액_합계):
+def 정산요청서(정산요청자_닉네임):
 
-    단위구분_금액 = "{:,}".format(금액)
-    단위구분_총합 = "{:,}".format(요청금액_합계)
-    embed = discord.Embed(title=f"**{정산요청자_닉네임}님의 정산 요청 내역** :clipboard:", color=0xffffff)
-    embed.add_field(name=f"**품목명** `{품목명}`",value="", inline=False)
-    embed.add_field(name=f"**수량** `{갯수}세트`",value="", inline=False)
-    embed.add_field(name=f"**금액** `{단위구분_금액}원`",value="", inline=False)
-    embed.add_field(name=f"**총 합** `{단위구분_총합}원`",value="", inline=False)
+        
+    요청자 = f"{정산요청자_닉네임}님의 정산 요청 내역"
+    총금액 = 정산요청서_불러오기(요청자).get("총 금액")
+    품목명_리스트, 금액_리스트 , 세트_리스트= 정산요청상세_불러오기(요청자)
+    
+    품목명_필드 = "\n".join([f"{품목명}" for 품목명 in 품목명_리스트])
+    금액_필드 = "\n".join([f"{금액}원" for 금액 in 금액_리스트])
+    세트_필드 = "\n".join([f"{세트}세트" for 세트 in 세트_리스트])
+
+    총금액 = "{:,}".format(총금액)
+    embed = discord.Embed(title=f"**{정산요청자_닉네임}님의 정산 요청 내역** :clipboard:", description="===========================", color=0xffffff)
+
+    embed.add_field(name="**품목명**",value=f"{품목명_필드}", inline=True)
+    embed.add_field(name="**수량**",value=f"{세트_필드}", inline=True)
+    embed.add_field(name="**금액**",value=f"{금액_필드}", inline=True)
+    embed.add_field(name="",value="===========================", inline=False)
+    embed.add_field(name=f"**총 금액** `{총금액}원`",value="", inline=True)
 
     return embed

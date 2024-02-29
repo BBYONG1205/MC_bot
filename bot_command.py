@@ -75,91 +75,66 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
     정산요청자_닉네임 = 기존등록멤버.get("닉네임")
     요청자 = f"{정산요청자_닉네임}님의 정산 요청 내역"
     요청서_불러오기=정산요청서_불러오기(요청자)
- 
+    
+    if 요청서_불러오기 is None:
+        요청서생성 = {"요청내역":[], "총 금액" : 0}
+        정산요청서_생성(요청자, 요청서생성)
+
+
     if 기존등록멤버 is None:
         await interaction.response.send_message("멤버 등록이 되어있지 않아 정산 요청 작업에 실패하였습니다.", ephemeral=True)
         return      
 
     요청내역 = 요청내역.replace(" ", "").strip()
     품목_세트_리스트 = re.findall(r'([가-힣]+)(\d+)', 요청내역)
-    
-    for 품목명, 세트 in 품목_세트_리스트:
-        세트 = int(세트)
 
-    print(품목명)
-    print(세트)
-    print(품목_세트_리스트)
-    
-    축약어_모음 = 축약어()
+    결과_리스트 = []
+    금액_합 = 0
 
-    광물, 농작물, 물고기, 기타 = 품목_목록()
+    for match in 품목_세트_리스트:
+        품목, 세트 = match
+        축약어_모음 = 축약어()
 
-    # 입력된 품목명을 축약어로 변환
-    품목명 = 축약어_모음.get(품목명, 품목명)
+        광물, 농작물, 물고기, 기타 = 품목_목록()
 
-    # 각 항목에 대한 축약어 적용
-    광물 = [축약어_모음.get(item, item) for item in 광물]
-    농작물 = [축약어_모음.get(item, item) for item in 농작물]
-    물고기 = [축약어_모음.get(item, item) for item in 물고기]
-    기타 = [축약어_모음.get(item, item) for item in 기타]
+        # 입력된 품목명을 축약어로 변환
+        품목명 = 축약어_모음.get(품목, 품목)
 
-    if 요청서_불러오기 is None:
+        # 각 항목에 대한 축약어 적용
+        광물 = [축약어_모음.get(item, item) for item in 광물]
+        농작물 = [축약어_모음.get(item, item) for item in 농작물]
+        물고기 = [축약어_모음.get(item, item) for item in 물고기]
+        기타 = [축약어_모음.get(item, item) for item in 기타]
 
-        총금액 = {"총 합" : 0}
-        
-        정산요청서_생성(요청자, 총금액)
-    
-    if "블럭" in 품목명:
-        
-        자원 = "광물"
-
-        품목명 = 품목명.replace("블럭", "").strip()
-
-        if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기:
+        if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
             await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
             return
-        
+    
+        if 품목명 in 광물 :
+            자원 = "광물"
+        if 품목명 in 농작물 : 
+            자원 = "농작물"
+        if 품목명 in 물고기 :
+            자원 = "물고기"
+
         개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격= 자원시세_계산(자원, 품목명)
-
-        품목명 = f"{품목명} 블럭"
-
-
-        금액 = (블럭세트_가격 * 세트) 
-
-        요청내역 = 세트, f"{금액}원"
-
-        요청금액_합계 = 정산요청서_불러오기(요청자).get("총 합") + 금액
+        금액 = 한세트_가격 *  int(세트)
+        결과_리스트.append((품목, int(세트), 금액))
+        금액_합 += 금액
         
-        정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계)
+        요청내역 = 세트, f"{금액}원"
+        print(품목, 세트, 금액)
+        요청서업데이트 ={"품목명":품목명, "세트":세트, "금액":금액}
+        요청금액_합계 = 정산요청서_불러오기(요청자).get("총 금액") + 금액_합
 
-        embed = 정산요청서(품목명,세트,금액,요청금액_합계)
-        await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed=embed)
-        return
-
-    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
-        await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
-        return
+        정산요청내역_업데이트(요청자, 요청서업데이트, 요청금액_합계)
+        
     
-    if 품목명 in 광물 :
-        자원 = "광물"
-    if 품목명 in 농작물 : 
-        자원 = "농작물"
-    if 품목명 in 물고기 :
-        자원 = "물고기"
-
-    개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 =자원시세_계산(자원, 품목명)
-
-    금액 = (한세트_가격 * 세트)
-
-    요청내역 = 세트,  f"{금액}원"
-
-    요청금액_합계 = 정산요청서_불러오기(요청자).get("총 합") + 금액
-
-    정산요청내역_업데이트(요청자, 품목명, 요청내역, 요청금액_합계)
     
-    embed = 정산요청서(정산요청자_닉네임,품목명,세트,금액,요청금액_합계)
-    
-    await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed=embed)
+    print(결과_리스트)
+    embed = 정산요청서(정산요청자_닉네임)
+        
+    await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed = embed)
     return
 
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -283,7 +258,7 @@ async def 정산(interaction: discord.Interaction, 멤버 : discord.Member):
         await interaction.response.send_message(f"{요청자_닉네임}님의 미정산 내역이 없습니다.", ephemeral=True)
         return
     
-    요청금액_확인 = 정산요청서_불러오기(요청자).get("총 합")
+    요청금액_확인 = 정산요청서_불러오기(요청자).get("총 금액")
     오청금액_총합 = "{:,}".format(요청금액_확인)
 
     embed = discord.Embed(title=f"**{요청자_닉네임}님의 정산 요청 금액** :clipboard:", color=0xffffff)
