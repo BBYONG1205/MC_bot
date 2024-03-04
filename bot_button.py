@@ -4,7 +4,7 @@ from bot_firebase import 정산요청내역_삭제
     
 class 정산버튼(discord.ui.View):
     def __init__(self, 요청자,멤버):
-        super().__init__()
+        super().__init__(timeout=None)
         self.요청자 = 요청자
         self.멤버 = 멤버
 

@@ -48,14 +48,18 @@ def 정산요청서_불러오기(요청자):
     else:
         return None
 
-def 정산요청내역_업데이트(요청자, 요청서업데이트,요청금액_합계):
+def 정산요청서_업데이트(요청자, 요청서업데이트):
     doc_ref = db.collection('정산 요청서').document(str(요청자))
     doc_ref.update({
-            "요청내역": firestore.ArrayUnion([요청서업데이트]),
+            "요청내역": firestore.ArrayUnion([요청서업데이트])
+        })
+    
+def 정산총금액_업데이트(요청자,요청금액_합계):
+    doc_ref = db.collection('정산 요청서').document(str(요청자))
+    doc_ref.update({
             "총 금액" : 요청금액_합계
         })
     
-
 def 정산요청상세_불러오기(요청자):
     db = firestore.client()
     doc_ref = db.collection('정산 요청서').document(str(요청자))
