@@ -3,7 +3,7 @@ from typing import Literal
 from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_불러오기, 시세_업데이트, 정산요청서_생성,정산총금액_업데이트, 정산요청서_업데이트, 정산요청서_불러오기, 정산요청내역_삭제
 from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드, 정산요청서
 from bot_marketprice import 자원시세_계산
-from bot_button import 정산버튼
+from bot_button import 정산버튼, 정산요청확정
 from bot_item import 품목_목록, 축약어
 import re
 import pyperclip
@@ -88,7 +88,10 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
     요청내역 = 요청내역.replace(" ", "").strip()
     품목_세트_리스트 = re.findall(r'([가-힣]+)(\d+)', 요청내역)
 
-    결과_리스트 = []
+
+    품목명_리스트 = []
+    세트_리스트 = []
+    금액_리스트 = []
     금액_합 = 0
 
     for match in 품목_세트_리스트:
@@ -119,21 +122,16 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
 
         _, 한세트_가격,_, _= 자원시세_계산(자원, 품목명)
         금액 = 한세트_가격 *  int(세트)
-        결과_리스트.append((품목, int(세트), 금액))
+        품목명_리스트.append(품목명)
+        세트_리스트.append(int(세트))
+        금액_리스트.append(금액)
+        
         금액_합 += 금액
         
-        요청내역 = 세트, f"{금액}원"
-        print(품목, 세트, 금액)
-        요청서업데이트 ={"품목명":품목명, "세트":세트, "금액":금액}
-        정산요청서_업데이트(요청자, 요청서업데이트)
-        
-    
-    요청금액_합계 = 정산요청서_불러오기(요청자).get("총 금액") + 금액_합
-    정산총금액_업데이트(요청자,요청금액_합계)
-    print(결과_리스트)
-    embed = 정산요청서(정산요청자_닉네임)
-        
-    await interaction.response.send_message(f"정산 요청이 완료되었습니다.", embed = embed)
+
+    embed = 정산요청서(정산요청자_닉네임, 품목명_리스트, 세트_리스트, 금액_리스트, 금액_합)
+    view = 정산요청확정(요청자,품목명_리스트, 세트_리스트, 금액_리스트, 금액_합)
+    await interaction.response.send_message(f"요청된 내역은 다음과 같습니다. 이대로 요청을 진행하시겠습니까?", embed=embed, view =view )
     return
 
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -157,14 +155,20 @@ async def 시세_확인(interaction: discord.Interaction, 품목명: str):
         return
     
     if 품목명 in 광물:
+
+        자원 = "광물"
+
         if 품목명 == "금 원석":
-            자원 = "광물"
             개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
             embed = 일반시세_임베드(품목명, 개당_가격, 한세트_가격)
+            await interaction.response.send_message(embed=embed)
+            return
+        
         else:
-            자원 = "광물"
             개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
             embed = 광물시세_임베드(품목명, 개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격)
+            await interaction.response.send_message(embed=embed)   
+            return 
 
     if 품목명 in 농작물:
         자원 = "농작물"
@@ -177,8 +181,9 @@ async def 시세_확인(interaction: discord.Interaction, 품목명: str):
 
     개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
     embed = 일반시세_임베드(품목명, 개당_가격, 한세트_가격)
-    await interaction.response.send_message(embed=embed)
 
+    await interaction.response.send_message(embed=embed)
+    return
     
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 

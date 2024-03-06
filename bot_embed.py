@@ -52,7 +52,26 @@ def 일반시세_임베드(품목명, 개당_가격, 한세트_가격):
     return embed
 
 
-def 정산요청서(정산요청자_닉네임):
+def 정산요청서(정산요청자_닉네임, 품목명_리스트, 세트_리스트, 금액_리스트, 금액_합):
+
+    
+    품목명_필드 = "\n".join([f"{품목명}" for 품목명 in 품목명_리스트])
+    금액_필드 = "\n".join([f"{금액}원" for 금액 in 금액_리스트])
+    세트_필드 = "\n".join([f"{세트}세트" for 세트 in 세트_리스트])
+
+    총금액 = "{:,}".format(금액_합)
+    embed = discord.Embed(title=f"**{정산요청자_닉네임}님의 정산 요청 내역** :clipboard:", description="===========================", color=0xffffff)
+
+    embed.add_field(name="**품목명**",value=f"{품목명_필드}", inline=True)
+    embed.add_field(name="**수량**",value=f"{세트_필드}", inline=True)
+    embed.add_field(name="**금액**",value=f"{금액_필드}", inline=True)
+    embed.add_field(name="",value="===========================", inline=False)
+    embed.add_field(name=f"**총 금액** `{총금액}원`",value="", inline=True)
+
+    return embed
+
+
+def 정산요청내역(정산요청자_닉네임):
 
         
     요청자 = f"{정산요청자_닉네임}님의 정산 요청 내역"
