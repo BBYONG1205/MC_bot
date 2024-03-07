@@ -89,13 +89,27 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
     품목_세트_리스트 = re.findall(r'([가-힣]+)(\d+)', 요청내역)
 
 
+
+
     품목명_리스트 = []
     세트_리스트 = []
     금액_리스트 = []
     금액_합 = 0
 
+
     for match in 품목_세트_리스트:
         품목, 세트 = match
+
+        if "블" in 품목:
+            광물명 = 품목.replace("블", "").strip()
+            세트 = int(세트) * 9
+            품목 = 광물명
+
+        if "셜" in 품목:
+            작물명 = 품목.replace("셜", "").strip()
+            세트 = int(세트) * 27 
+            품목 = 작물명
+
         축약어_모음 = 축약어()
 
         광물, 농작물, 물고기, 기타 = 품목_목록()
@@ -266,12 +280,15 @@ async def 정산(interaction: discord.Interaction, 멤버 : discord.Member):
     오청금액_총합 = "{:,}".format(요청금액_확인)
 
     embed = discord.Embed(title=f"**{요청자_닉네임}님의 정산 요청 금액** :clipboard:", color=0xffffff)
+    if 멤버.avatar:      
+        embed.set_thumbnail(url=멤버.avatar.url)
+    else:  
+        embed.set_thumbnail(url="https://i.ibb.co/Vm2Gx5w/image.jpg")
     embed.add_field(name=f"**총 정산 금액**",value=f"{오청금액_총합}원", inline=False)
 
     view = 정산버튼(요청자,멤버)
 
     await interaction.response.send_message(f"{요청자_닉네임}님의 정산 요청 금액을 정산하시겠습니까?", embed = embed, view =view )
-
 
 
 

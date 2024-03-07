@@ -1,5 +1,6 @@
 import discord
 from bot_firebase import 멤버정보_불러오기, 정산요청서_불러오기, 정산요청상세_불러오기
+from bot_marketprice import 자원시세_계산
 
 def 멤버정보_임베드(유저):
     
@@ -90,5 +91,45 @@ def 정산요청내역(정산요청자_닉네임):
     embed.add_field(name="**금액**",value=f"{금액_필드}", inline=True)
     embed.add_field(name="",value="===========================", inline=False)
     embed.add_field(name=f"**총 금액** `{총금액}원`",value="", inline=True)
+
+    return embed
+
+
+
+
+def 티켓설명():
+    embed = discord.Embed(title="**정산봇 사용 가이드**", description="", color=0xffffff)
+    embed.add_field(name="**정산요청**",value="- 모든 자원은 자원의 첫 번째 글자, 초성, 영타 등으로 입력 가능합니다.\n\n예시)토1홉1포1\n\n- 셜커 혹은 블럭 단위로 입력을 원하는 경우 셜커는 '셜', 블럭은 '블' 이라고 자원명 뒤에 붙여주세요.\n\n예시)토셜1금블1", inline=False)
+    embed.add_field(name="**주의사항**", value="- 자원명과 숫자는 반드시 분리되어야 합니다.\n\n예시)토마토11홉\n→ 토마토 1세트 홉1세트가 아닌 토마토11세트로 입력됨",inline=False)
+    #embed.set_footer(text="정산이 끝난 경우 하단의 정산 완료 버튼을 통해 티켓을 닫을 수 있습니다.")
+    return embed
+
+def 시세표():
+    def 가격_가져오기(자원, 품목들):
+        개당가격_리스트 = []
+        한세트가격_리스트 = []
+
+        for 품목명 in 품목들:
+            개당_가격, 한세트_가격, _, _ = 자원시세_계산(자원, 품목명)
+            개당가격_리스트.append(개당_가격)
+            한세트가격_리스트.append(한세트_가격)
+
+        품목명_필드 = "\n".join(품목들)
+        개당가격_필드 = "\n".join([f"{가격}원" for 가격 in 개당가격_리스트])
+        세트가격_필드 = "\n".join([f"{format(가격, ',')}원" for 가격 in 한세트가격_리스트])
+
+        return 품목명_필드, 개당가격_필드, 세트가격_필드
+
+    농작물 = ["가지", "파인애플", "홉", "토마토", "고추", "마늘", "양배추", "배추", "포도", "옥수수"]
+    기타 = ["조미료", "닭고기", "생고기"]
+
+    농작물_품목, 농작물_개당가격, 농작물_세트가격 = 가격_가져오기("농작물", 농작물)
+    기타_품목, 기타_개당가격, 기타_세트가격 = 가격_가져오기("기타", 기타)
+
+    embed = discord.Embed(title="", description="", color=0xffffff)
+
+    embed.add_field(name="**품목명**", value=f"{농작물_품목}\n{기타_품목}", inline=True)
+    embed.add_field(name="**1셋**", value=f"{농작물_세트가격}\n{기타_세트가격}", inline=True)
+    embed.add_field(name="**1개**", value=f"{농작물_개당가격}\n{기타_개당가격}", inline=True)
 
     return embed

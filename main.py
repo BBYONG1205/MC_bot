@@ -3,6 +3,8 @@ from discord import app_commands
 from typing import Literal
 from bot_command import 멤버등록, 정보, 복사, 시세_확인,시세_변동, 정산요청, 정산
 from bot_guide import guide
+from bot_embed import 시세표
+from bot_ticket import ticket_launcher
 
 f = open('token.txt', 'r')
 token = f.readline().strip()
@@ -11,12 +13,23 @@ class aclient(discord.Client):
     def __init__(self):
         super().__init__(intents = discord.Intents.default())
         self.synced = False
+        self.added = False
+        self.added2 = False
 
     async def on_ready(self):
         await self.wait_until_ready()
         if not self.synced: 
             await tree.sync() 
             self.synced = True
+
+        if not self.added :
+            self.add_view(ticket_launcher())
+            self.added = True
+
+        if not self.added2 :
+            self.add_view(ticket_launcher())
+            self.added2 = True
+
         print(f'{self.user}이 시작되었습니다')
         game = discord.Game('정산') 
         await self.change_presence(status=discord.Status.online, activity=game)
@@ -61,6 +74,18 @@ async def guide_command(interaction:discord.Interaction):
 
     await interaction.response.send_message(embed=embed)
 
+@tree.command(name='티켓생성', description='정산 전용 티켓을 생성합니다.')
+async def ticketing(interaction:discord.Interaction):
+    embed = discord.Embed(title="하단의 버튼을 눌러 정산 기능을 이용해보세요!", color=0xffffff)
+    embed.add_field(name="**- 개인의 정산 전용 채널이 생성됩니다.**",value="",inline=False)
+    embed.add_field(name="**- 정산이 완료되면 채널을 삭제할 수 있습니다.**",value="",inline=False)
+    await interaction.channel.send(embed=embed, view=ticket_launcher())
+    await interaction.response.send_message("정산 전용 티켓 생성이 완료되었습니다.", ephemeral=True)
 
+
+@tree.command(name='시세표', description='기린 서버의 자원들에 대한 시세표입니다.')
+async def marketprice(interaction:discord.Interaction):
+    embed= 시세표()
+    await interaction.response.send_message(embed=embed)
 
 client.run(token)
