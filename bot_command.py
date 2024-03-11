@@ -1,7 +1,7 @@
 import discord
 from typing import Literal
 from bot_firebase import 멤버정보_저장, 멤버정보_불러오기, 시세_불러오기, 시세_업데이트, 정산요청서_생성,정산총금액_업데이트, 정산요청서_업데이트, 정산요청서_불러오기, 정산요청내역_삭제
-from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드, 정산요청서
+from bot_embed import 멤버정보_임베드, 광물시세_임베드, 일반시세_임베드, 정산요청서, 정산요청내역
 from bot_marketprice import 자원시세_계산
 from bot_button import 정산버튼, 정산요청확정
 from bot_item import 품목_목록, 축약어
@@ -13,7 +13,7 @@ import pyperclip
 
 async def 멤버등록(interaction: discord.Interaction, 유저:discord.Member, 닉네임:str, 직업: Literal["광부", "농부", "어부", "요리사"], 마크아이디: str):
     
-    print(f"멤버 등록 요청 : {interaction.user.display_name} \n 입력 닉네임 : {닉네임}")
+    print(f"멤버 등록 요청:{interaction.user.display_name} \n 입력 닉네임:{닉네임}")
 
     기존등록멤버 = 멤버정보_불러오기(유저.id)
 
@@ -50,6 +50,52 @@ async def 정보(interaction: discord.Interaction, 유저:discord.Member):
     await interaction.response.send_message(embed=embed)
     return
 
+
+async def 정산요청내역확인(interaction: discord.Interaction):
+
+    print(f"정산요청내역 확인:{interaction.user.display_name}")
+
+    유저 = interaction.user
+    기존등록멤버 = 멤버정보_불러오기(유저.id)
+
+    if 기존등록멤버 is None:
+        await interaction.response.send_message("등록되지 않은 멤버입니다.", ephemeral=True)
+        return
+    
+    닉네임 = 기존등록멤버.get('닉네임')
+    요청자 = f"{닉네임}님의 정산 요청 내역" 
+    요청내역확인 = 정산요청서_불러오기(요청자)
+
+    if 요청내역확인 is None : 
+        await interaction.response.send_message("등록된 요청내역이 없습니다.", ephemeral= True)
+        return 
+    
+    embed = 정산요청내역(요청자)
+    await interaction.response.send_message(embed=embed, ephemeral= True)
+    return
+
+async def 멤버요청내역확인(interaction: discord.Interaction,멤버:discord.Member):
+    print(f"멤버 정산요청내역 확인:{interaction.user.display_name}\n멤버-{멤버.display_name}")
+
+    
+    기존등록멤버 = 멤버정보_불러오기(멤버.id)
+
+    if 기존등록멤버 is None:
+        await interaction.response.send_message("등록되지 않은 멤버입니다.", ephemeral=True)
+        return
+    
+    닉네임 = 기존등록멤버.get('닉네임')
+    요청자 = f"{닉네임}님의 정산 요청 내역"
+    요청내역확인 = 정산요청서_불러오기(요청자)
+
+    if 요청내역확인 is None : 
+        await interaction.response.send_message("등록된 요청내역이 없습니다.", ephemeral= True)
+        return 
+    
+    embed = 정산요청내역(요청자)
+    await interaction.response.send_message(embed=embed, ephemeral= True)
+    return
+
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 async def 복사(interaction: discord.Interaction, 유저:discord.Member):
@@ -75,7 +121,9 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
     정산요청자_닉네임 = 기존등록멤버.get("닉네임")
     요청자 = f"{정산요청자_닉네임}님의 정산 요청 내역"
     요청서_불러오기=정산요청서_불러오기(요청자)
-    
+
+    print (f"정산요청자:{interaction.user.display_name}\n입력값:{요청내역}")
+
     if 요청서_불러오기 is None:
         요청서생성 = {"요청내역":[], "총 금액" : 0}
         정산요청서_생성(요청자, 요청서생성)
@@ -87,8 +135,6 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
 
     요청내역 = 요청내역.replace(" ", "").strip()
     품목_세트_리스트 = re.findall(r'([가-힣]+)(\d+)', 요청내역)
-
-
 
 
     품목명_리스트 = []
@@ -105,8 +151,13 @@ async def 정산요청(interaction: discord.Interaction, 요청내역 : str):
             세트 = int(세트) * 9
             품목 = 광물명
 
-        if "셜" in 품목:
+        if 품목.endswith('셜'):
             작물명 = 품목.replace("셜", "").strip()
+            세트 = int(세트) * 27 
+            품목 = 작물명
+
+        if 품목.endswith('셜커'):
+            작물명 = 품목.replace("셜커", "").strip()
             세트 = int(세트) * 27 
             품목 = 작물명
 
@@ -196,13 +247,14 @@ async def 시세_확인(interaction: discord.Interaction, 품목명: str):
     개당_가격, 한세트_가격, 한블럭_가격, 블럭세트_가격 = 자원시세_계산(자원, 품목명)
     embed = 일반시세_임베드(품목명, 개당_가격, 한세트_가격)
 
-    await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
     return
     
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 async def 시세_변동(interaction:discord.Interaction, 품목명 : str, 세트가격 : int):
     
+    print(f"시세변동 입력:{interaction.user.display_name}\n입력 품목명:{품목명}\n세트가격:{세트가격}")
 
     축약어_모음 = 축약어()
 

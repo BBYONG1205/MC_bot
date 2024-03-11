@@ -1,6 +1,6 @@
 import discord
 from bot_firebase import 정산요청내역_삭제, 정산요청서_업데이트, 정산총금액_업데이트, 정산요청서_불러오기
-
+from bot_embed import 정산요청내역
     
 class 정산버튼(discord.ui.View):
     def __init__(self, 요청자,멤버):
@@ -53,7 +53,8 @@ class 정산요청확정(discord.ui.View):
 
         요청금액합계 = 정산요청서_불러오기(self.요청자).get("총 금액") + self.금액_합
         정산총금액_업데이트(self.요청자,요청금액합계)
-        await interaction.response.edit_message(content="요청이 완료되었습니다.", view =self)
+        embed = 정산요청내역(self.요청자)
+        await interaction.response.edit_message(content="요청이 완료되었습니다.", embed = embed ,view =self)
 
 
     @discord.ui.button(label='취소', style=discord.ButtonStyle.danger, custom_id='정산요청취소')
@@ -61,3 +62,21 @@ class 정산요청확정(discord.ui.View):
         button.disabled = True
         self.children[0].disabled = True
         await interaction.response.edit_message(content="요청이 취소되었습니다.", view =self)  # 새로운 메시지 발송
+
+
+#
+        
+class 뿅정산(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label='정산하기', style=discord.ButtonStyle.primary, custom_id='뿅정산')
+    async def 뵹뵹이정산(self, interaction: discord.Interaction, button: discord.ui.Button):
+        요청자 = "뵹뵹이님의 정산 요청 내역"
+        요청서_불러오기=정산요청서_불러오기(요청자)
+        if 요청서_불러오기 is None :
+            await interaction.response.send_message("요청된 정산 내역이 없습니다.",ephemeral=True)
+            return
+        정산요청내역_삭제(요청자)
+
+        await interaction.response.send_message(content="뵹뵹이님의 정산이 완료되었습니다.")
