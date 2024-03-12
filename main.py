@@ -4,8 +4,8 @@ from typing import Literal
 from bot_command import 멤버등록, 정보, 복사, 시세_확인,시세_변동, 정산요청, 정산, 정산요청내역확인, 멤버요청내역확인
 from bot_guide import guide
 from bot_embed import 시세표
-from bot_event import 간편정산, 신규업데이트
-from bot_button import 뿅정산
+from bot_event import 신규업데이트
+from bot_button import 뿅정산, 퀸정산,머부정산
 from bot_ticket import ticket_launcher
 
 f = open('token.txt', 'r')
@@ -17,7 +17,8 @@ class aclient(discord.Client):
         self.synced = False
         self.added = False
         self.bbyong = False
-
+        self.queen = False
+        self.merboo = False
 
     async def on_ready(self):
         await self.wait_until_ready()
@@ -33,8 +34,13 @@ class aclient(discord.Client):
             self.add_view(뿅정산())
             self.bbyong = True
     
+        if not self.queen :
+            self.add_view(퀸정산())
+            self.queen = True
 
-
+        if not self.merboo :
+            self.add_view(머부정산())
+            self.merboo = True
 
         print(f'{self.user}이 시작되었습니다')
         game = discord.Game('정산') 
@@ -49,7 +55,7 @@ tree = app_commands.CommandTree(client)
 
 @client.event
 async def on_message(message):
-    await 간편정산(client,message)
+
     await 신규업데이트(client,message)
 
 
@@ -114,5 +120,16 @@ async def member_settlement_list (interaction:discord.Interaction, 멤버 : disc
 async def test(interaction:discord.Interaction):
     view = 뿅정산()
     await interaction.response.send_message("뵹뵹이님의 요청 내역을 정산하시겠습니까?", view = view)
+
+
+@tree.command(name='지노정산설치', description='퀸지노님 전용 정산 버튼을 설치합니다..')
+async def test(interaction:discord.Interaction):
+    view = 퀸정산()
+    await interaction.response.send_message("퀸지노님의 요청 내역을 정산하시겠습니까?", view = view)
+
+@tree.command(name='머부정산설치', description='김머부님 전용 정산 버튼을 설치합니다..')
+async def test(interaction:discord.Interaction):
+    view = 머부정산()
+    await interaction.response.send_message("김머부님의 요청 내역을 정산하시겠습니까?", view = view)
 
 client.run(token)

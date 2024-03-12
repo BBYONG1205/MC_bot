@@ -133,3 +133,23 @@ def 시세표():
     embed.add_field(name="**1개**", value=f"{농작물_개당가격}\n{기타_개당가격}", inline=True)
 
     return embed
+
+
+def 정산_embed (요청자,프사):
+    요청서_확인 = 정산요청서_불러오기(요청자)
+
+    if 요청서_확인 is None :
+        요청금액_확인 = int(0)
+    
+    else:
+        요청금액_확인 = 정산요청서_불러오기(요청자).get("총 금액")
+    
+    요청금액_총합 = "{:,}".format(요청금액_확인)
+
+    embed = discord.Embed(title=f"**{요청자}** :clipboard:", color=0xffffff)
+ 
+    embed.set_thumbnail(url=프사)
+
+    embed.add_field(name=f"**총 정산 금액**",value=f"{요청금액_총합}원", inline=False)
+
+    return embed
