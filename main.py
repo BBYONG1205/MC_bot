@@ -4,7 +4,7 @@ from typing import Literal
 from bot_command import 멤버등록, 정보, 복사, 시세_확인,시세_변동, 정산요청, 정산, 정산요청내역확인, 멤버요청내역확인
 from bot_guide import guide
 from bot_embed import 시세표
-from bot_event import 신규업데이트
+from bot_event import 뵹뵹업데이트,지노업데이트,머부업데이트
 from bot_button import 뿅정산, 퀸정산,머부정산
 from bot_ticket import ticket_launcher
 
@@ -56,7 +56,9 @@ tree = app_commands.CommandTree(client)
 @client.event
 async def on_message(message):
 
-    await 신규업데이트(client,message)
+    await 뵹뵹업데이트(client,message)
+    await 지노업데이트(client,message)
+    await 머부업데이트(client,message)
 
 
 @tree.command(name ='등록', description='기린 서버를 함께하는 멤버 등록을 진행합니다.') 
@@ -103,7 +105,7 @@ async def ticketing(interaction:discord.Interaction):
     await interaction.response.send_message("정산 전용 티켓 생성이 완료되었습니다.", ephemeral=True)
 
 
-@tree.command(name='시세표', description='기린 서버의 자원들에 대한 시세표입니다.')
+@tree.command(name='작물시세', description='기린 서버의 작물들에 대한 시세표입니다.')
 async def marketprice(interaction:discord.Interaction):
     embed= 시세표()
     await interaction.response.send_message(embed=embed)
@@ -120,7 +122,6 @@ async def member_settlement_list (interaction:discord.Interaction, 멤버 : disc
 async def test(interaction:discord.Interaction):
     view = 뿅정산()
     await interaction.response.send_message("뵹뵹이님의 요청 내역을 정산하시겠습니까?", view = view)
-
 
 @tree.command(name='지노정산설치', description='퀸지노님 전용 정산 버튼을 설치합니다..')
 async def test(interaction:discord.Interaction):

@@ -3,10 +3,17 @@ from bot_button import 뿅정산, 퀸정산,머부정산
 from bot_embed import 정산_embed 
 import asyncio
 
+
         
 
-async def 신규업데이트(client, message):
-    
+async def 뵹뵹업데이트(client, message):
+
+    TARGET_CHANNEL_ID = 1215170600675577887
+
+    if message.channel.id != TARGET_CHANNEL_ID:
+        return
+
+
     if  message.content.startswith('뵹뵹이님의 요청 내역을 정산하시겠습니까?'):
         return 
     
@@ -33,6 +40,13 @@ async def 신규업데이트(client, message):
 
   
 
+async def 지노업데이트(client, message):
+
+    TARGET_CHANNEL_ID = 1215305636653568081
+
+    if message.channel.id != TARGET_CHANNEL_ID:
+        return
+    
     if message.content.startswith('퀸지노님의 요청 내역을 정산하시겠습니까?'):
         return
     
@@ -55,7 +69,14 @@ async def 신규업데이트(client, message):
                 message.channel.send("퀸지노님의 요청 내역을 정산하시겠습니까?", embed=embed, view=view)
             )
             return
-                
+
+async def 머부업데이트(client, message):
+
+    TARGET_CHANNEL_ID = 1215881784042983475
+
+    if message.channel.id != TARGET_CHANNEL_ID:
+        return
+    
     if message.content.startswith('김머부님의 요청 내역을 정산하시겠습니까?'):
         return
     
