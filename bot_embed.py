@@ -55,22 +55,35 @@ def 일반시세_임베드(품목명, 개당_가격, 한세트_가격):
 
 def 정산요청서(정산요청자_닉네임, 품목명_리스트, 세트_리스트, 금액_리스트, 금액_합):
 
+    표기_리스트 = []
     
+    for 숫자 in 세트_리스트:
+        if 숫자 < 27 :
+            표기_리스트.append(f'{숫자}셋')
+        elif 숫자 >27 :    
+            셜 = 숫자 // 27
+            세트 = 숫자 - (셜 * 27)
+            if 세트 == 0 :
+                
+                표기_리스트.append(f'{셜}셜')
+            else :
+                      # 수정: 나누기 연산자(//) 대신에 곱셈 연산자(*)를 사용
+                표기_리스트.append(f'{셜}셜 {세트}셋')  # 수정: '셋' 대신에 '세트'로 변경
+        
     품목명_필드 = "\n".join([f"{품목명}" for 품목명 in 품목명_리스트])
-    금액_필드 = "\n".join([f"{금액}원" for 금액 in 금액_리스트])
-    세트_필드 = "\n".join([f"{세트}세트" for 세트 in 세트_리스트])
+    금액_필드 = "\n".join([f"{format(금액,",")}원" for 금액 in 금액_리스트])
+    표기_필드 = "\n".join([f"{표기}" for 표기 in 표기_리스트])
 
     총금액 = "{:,}".format(금액_합)
     embed = discord.Embed(title=f"**{정산요청자_닉네임}님의 정산 요청 내역** :clipboard:", description="===========================", color=0xffffff)
 
     embed.add_field(name="**품목명**",value=f"{품목명_필드}", inline=True)
-    embed.add_field(name="**수량**",value=f"{세트_필드}", inline=True)
+    embed.add_field(name="**수량**",value=f"{표기_필드}", inline=True)
     embed.add_field(name="**금액**",value=f"{금액_필드}", inline=True)
     embed.add_field(name="",value="===========================", inline=False)
     embed.add_field(name=f"**총 금액** `{총금액}원`",value="", inline=True)
 
     return embed
-
 
 def 정산요청내역(요청자):
 
@@ -78,16 +91,33 @@ def 정산요청내역(요청자):
     
     총금액 = 정산요청서_불러오기(요청자).get("총 금액")
     품목명_리스트, 금액_리스트 , 세트_리스트= 정산요청상세_불러오기(요청자)
+
     
+    표기_리스트 = []
+    
+    for 숫자 in 세트_리스트:
+        if 숫자 < 27 :
+            표기_리스트.append(f'{숫자}셋')
+        elif 숫자 >27 :    
+            셜 = 숫자 // 27
+            세트 = 숫자 - (셜 * 27)
+            if 세트 == 0 :
+                
+                표기_리스트.append(f'{셜}셜')
+            else :
+                      # 수정: 나누기 연산자(//) 대신에 곱셈 연산자(*)를 사용
+                표기_리스트.append(f'{셜}셜 {세트}셋')  # 수정: '셋' 대신에 '세트'로 변경
+        
+        
     품목명_필드 = "\n".join([f"{품목명}" for 품목명 in 품목명_리스트])
-    금액_필드 = "\n".join([f"{금액}원" for 금액 in 금액_리스트])
-    세트_필드 = "\n".join([f"{세트}세트" for 세트 in 세트_리스트])
+    금액_필드 = "\n".join([f"{format(금액,",")}원" for 금액 in 금액_리스트])
+    표기_필드 = "\n".join([f"{표기}" for 표기 in 표기_리스트])
 
     총금액 = "{:,}".format(총금액)
     embed = discord.Embed(title=f"**{요청자}** :clipboard:", description="===========================", color=0xffffff)
 
     embed.add_field(name="**품목명**",value=f"{품목명_필드}", inline=True)
-    embed.add_field(name="**수량**",value=f"{세트_필드}", inline=True)
+    embed.add_field(name="**수량**",value=f"{표기_필드}", inline=True)
     embed.add_field(name="**금액**",value=f"{금액_필드}", inline=True)
     embed.add_field(name="",value="===========================", inline=False)
     embed.add_field(name=f"**총 금액** `{총금액}원`",value="", inline=True)

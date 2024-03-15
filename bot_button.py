@@ -1,5 +1,5 @@
 import discord
-from bot_firebase import 정산요청내역_삭제, 정산요청서_업데이트, 정산총금액_업데이트, 정산요청서_불러오기
+from bot_firebase import 정산요청내역_삭제, 정산요청서_업데이트, 정산요청서_생성, 정산총금액_업데이트, 정산요청서_불러오기, 정산요청상세_불러오기
 from bot_embed import 정산요청내역, 정산_embed
     
 class 정산버튼(discord.ui.View):
@@ -28,34 +28,67 @@ class 정산버튼(discord.ui.View):
 
 
 
+
+
 class 정산요청확정(discord.ui.View):
-    def __init__(self, 요청자,품목명_리스트, 세트_리스트, 금액_리스트, 금액_합):
+    def __init__(self, 요청자, 품목명_리스트, 세트_리스트, 금액_리스트, 금액_합):
         super().__init__(timeout=None)
         self.요청자 = 요청자
-        self.품목명_리스트 = 품목명_리스트
-        self.세트_리스트 = 세트_리스트
-        self.금액_리스트 = 금액_리스트
+        self.신규_품목명_리스트 = 품목명_리스트
+        self.신규_세트_리스트 = 세트_리스트
+        self.신규_금액_리스트 = 금액_리스트
         self.금액_합 = 금액_합
 
     @discord.ui.button(label='요청', style=discord.ButtonStyle.primary, custom_id='정산요청')
     async def 정산요청(self, interaction: discord.Interaction, button: discord.ui.Button):
         button.disabled = True
         self.children[1].disabled = True
-        for i in range(len(self.품목명_리스트)):
+
+        품목명_리스트, 금액_리스트, 세트_리스트 = 정산요청상세_불러오기(self.요청자)
+        기존요청금액 = 정산요청서_불러오기(self.요청자).get("총 금액")
+
+        # 기존 요청내역 삭제
+        정산요청내역_삭제(self.요청자)
+        
+        # 새로운 요청서 생성
+        요청서생성 = {"요청내역": [], "총 금액": 0}
+        정산요청서_생성(self.요청자, 요청서생성)
+
+        # 기존에 입력된 품목과 비교하여 업데이트
+        for index, 품목 in enumerate(품목명_리스트):
+            if 품목 in self.신규_품목명_리스트:
+                # 같은 품목이 있다면 해당 품목의 인덱스를 가져옴
+                idx = self.신규_품목명_리스트.index(품목)
+                # 세트값과 금액을 업데이트
+                세트_리스트[index] += self.신규_세트_리스트[idx]
+                금액_리스트[index] += self.신규_금액_리스트[idx]
+
+        # 새로운 품목 추가
+        for i in range(len(self.신규_품목명_리스트)):
+            if self.신규_품목명_리스트[i] not in 품목명_리스트:
+                품목명_리스트.append(self.신규_품목명_리스트[i])
+                세트_리스트.append(self.신규_세트_리스트[i])
+                금액_리스트.append(self.신규_금액_리스트[i])
+
+        # 업데이트된 값을 사용하여 요청서를 업데이트
+        for i in range(len(품목명_리스트)):
             data = {
-                "품목명": self.품목명_리스트[i],
-                "세트": self.세트_리스트[i],
-                "금액": self.금액_리스트[i]
-                        }
+                "품목명": 품목명_리스트[i],
+                "세트": 세트_리스트[i],
+                "금액": 금액_리스트[i]
+            }
             요청서업데이트 = data
             정산요청서_업데이트(self.요청자, 요청서업데이트)
 
+        # 요청금액 합계 업데이트
+        요청금액합계 = 기존요청금액 + self.금액_합
+        정산총금액_업데이트(self.요청자, 요청금액합계)
 
-        요청금액합계 = 정산요청서_불러오기(self.요청자).get("총 금액") + self.금액_합
-        정산총금액_업데이트(self.요청자,요청금액합계)
+        # 업데이트된 내용을 보여주기 위해 새로운 요청내역 생성
         embed = 정산요청내역(self.요청자)
-        await interaction.response.edit_message(embed = embed, view =self)
+        await interaction.response.edit_message(embed=embed, view=self)
         await interaction.channel.send(content="요청이 완료되었습니다.")
+
 
 
     @discord.ui.button(label='취소', style=discord.ButtonStyle.danger, custom_id='정산요청취소')
