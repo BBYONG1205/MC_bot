@@ -29,7 +29,7 @@ async def 뵹뵹업데이트(client, message):
             멤버_id = 370364396058181635
             멤버 = await client.fetch_user(멤버_id)
             요청자 = "뵹뵹이님의 정산 요청 내역"
-            프사 = 멤버.avatar.url
+            프사 = "https://i.ibb.co/Y2h4FHW/image.webp"
             view = 뿅정산()
             embed = 정산_embed(요청자, 프사)
             await asyncio.gather(
