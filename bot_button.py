@@ -31,11 +31,12 @@ class 정산버튼(discord.ui.View):
 
 
 class 정산요청확정(discord.ui.View):
-    def __init__(self, 요청자, 품목명_리스트, 세트_리스트, 금액_리스트, 금액_합):
+    def __init__(self, 요청자, 품목명_리스트, 세트_리스트, 셜커_리스트, 금액_리스트, 금액_합):
         super().__init__(timeout=None)
         self.요청자 = 요청자
         self.신규_품목명_리스트 = 품목명_리스트
         self.신규_세트_리스트 = 세트_리스트
+        self.신규_셜커_리스트 = 셜커_리스트
         self.신규_금액_리스트 = 금액_리스트
         self.금액_합 = 금액_합
 
@@ -44,7 +45,7 @@ class 정산요청확정(discord.ui.View):
         button.disabled = True
         self.children[1].disabled = True
 
-        품목명_리스트, 금액_리스트, 세트_리스트 = 정산요청상세_불러오기(self.요청자)
+        품목명_리스트, 금액_리스트, 세트_리스트, 셜커_리스트 = 정산요청상세_불러오기(self.요청자)
         기존요청금액 = 정산요청서_불러오기(self.요청자).get("총 금액")
 
         # 기존 요청내역 삭제
@@ -61,6 +62,7 @@ class 정산요청확정(discord.ui.View):
                 idx = self.신규_품목명_리스트.index(품목)
                 # 세트값과 금액을 업데이트
                 세트_리스트[index] += self.신규_세트_리스트[idx]
+                셜커_리스트[index] += self.신규_셜커_리스트[idx]
                 금액_리스트[index] += self.신규_금액_리스트[idx]
 
         # 새로운 품목 추가
@@ -68,6 +70,7 @@ class 정산요청확정(discord.ui.View):
             if self.신규_품목명_리스트[i] not in 품목명_리스트:
                 품목명_리스트.append(self.신규_품목명_리스트[i])
                 세트_리스트.append(self.신규_세트_리스트[i])
+                셜커_리스트.append(self.신규_셜커_리스트[i])
                 금액_리스트.append(self.신규_금액_리스트[i])
 
         # 업데이트된 값을 사용하여 요청서를 업데이트
@@ -75,6 +78,7 @@ class 정산요청확정(discord.ui.View):
             data = {
                 "품목명": 품목명_리스트[i],
                 "세트": 세트_리스트[i],
+                "셜커": 셜커_리스트[i],
                 "금액": 금액_리스트[i]
             }
             요청서업데이트 = data

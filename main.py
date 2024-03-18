@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands 
 from typing import Literal
-from bot_command import 멤버등록, 정보, 복사, 시세_확인,시세_변동, 정산요청, 정산, 정산요청내역확인, 멤버요청내역확인
+from bot_command import 멤버등록,계산, 정보, 복사, 시세_확인,시세_변동, 정산요청, 정산, 정산요청내역확인, 멤버요청내역확인
 from bot_guide import guide
 from bot_embed import 시세표
 from bot_event import 뵹뵹업데이트,지노업데이트,머부업데이트
@@ -117,6 +117,13 @@ async def settlement_list(interaction:discord.Interaction):
 @tree.command(name='멤버요청내역', description= '등록된 멤버의 요청 내역을 확인합니다.')
 async def member_settlement_list (interaction:discord.Interaction, 멤버 : discord.Member):
     await 멤버요청내역확인(interaction,멤버)
+
+@tree.command(name='계산', description='수집한 자원의 값을 계산합니다.')
+async def calcurate(interaction:discord.Interaction, 계산내역 : str):
+    await 계산(interaction, 계산내역)
+
+
+
 
 @tree.command(name='뿅뿅정산설치', description='뿅망치 살인마님 전용 정산 버튼을 설치합니다..')
 async def test(interaction:discord.Interaction):
