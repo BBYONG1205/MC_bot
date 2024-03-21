@@ -275,62 +275,69 @@ async def 시세_확인(interaction: discord.Interaction, 품목명: str):
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 async def 시세_변동(interaction:discord.Interaction, 품목명 : str, 세트가격 : int):
-    
-    print(f"시세변동 입력:{interaction.user.display_name}\n입력 품목명:{품목명}\n세트가격:{세트가격}")
+    try:    
+        print(f"시세변동 입력:{interaction.user.display_name}\n입력 품목명:{품목명}\n세트가격:{세트가격}")
 
-    축약어_모음 = 축약어()
+        축약어_모음 = 축약어()
 
-    광물, 농작물, 물고기, 기타 = 품목_목록()
+        광물, 농작물, 물고기, 기타 = 품목_목록()
 
-    # 입력된 품목명을 축약어로 변환
-    품목명 = 축약어_모음.get(품목명, 품목명)
+        # 입력된 품목명을 축약어로 변환
+        품목명 = 축약어_모음.get(품목명, 품목명)
 
-    # 각 항목에 대한 축약어 적용
-    광물 = [축약어_모음.get(item, item) for item in 광물]
-    농작물 = [축약어_모음.get(item, item) for item in 농작물]
-    물고기 = [축약어_모음.get(item, item) for item in 물고기]
-    기타 = [축약어_모음.get(item, item) for item in 기타]
+        # 각 항목에 대한 축약어 적용
+        광물 = [축약어_모음.get(item, item) for item in 광물]
+        농작물 = [축약어_모음.get(item, item) for item in 농작물]
+        물고기 = [축약어_모음.get(item, item) for item in 물고기]
+        기타 = [축약어_모음.get(item, item) for item in 기타]
 
-    if "블럭" in 품목명:
-        광물명 = 품목명.replace("블럭", "").strip()
-        세트가격 = 세트가격/9
-        품목명 = 광물명
-    
-    if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
-        await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
-        return 
-    
-    if 품목명 in 광물 : 
-
-        자원 = "광물"
-
-    if 품목명 in 농작물:
-
-        자원 = "농작물"
-
-    if 품목명 in 물고기 :
-
-        자원 = "물고기"
-    
-    if 품목명 in 기타 : 
+        if "블럭" in 품목명:
+            광물명 = 품목명.replace("블럭", "").strip()
+            세트가격 = 세트가격/9
+            품목명 = 광물명
         
-        자원 = "기타"
+        if 품목명 not in 광물 and 품목명 not in 농작물 and 품목명 not in 물고기 and 품목명 not in 기타:
+            await interaction.response.send_message(f"올바르지 않은 품목명입니다.\n입력 값 : __**{품목명}**__",ephemeral=True)
+            return 
+        
+        if 품목명 in 광물 : 
 
-    변동가격 = round(세트가격 / 64,3)
+            자원 = "광물"
 
-    이전시세값 = 시세_불러오기(자원)
+        if 품목명 in 농작물:
 
-    이전시세 = 이전시세값.get(품목명)
+            자원 = "농작물"
 
-    시세_업데이트(자원,품목명, 변동가격)
+        if 품목명 in 물고기 :
 
-    시세 = 시세_불러오기(자원)
+            자원 = "물고기"
+        
+        if 품목명 in 기타 : 
+            
+            자원 = "기타"
 
-    변경시세 = 시세.get(품목명)
+        변동가격 = round(세트가격 / 64,3)
 
-    await interaction.response.send_message(f"다음과 같이 시세가 변동되었습니다. \n**{이전시세} → {변경시세}**")
-    return
+        이전시세값 = 시세_불러오기(자원)
 
+        이전시세 = 이전시세값.get(품목명)
+
+        시세_업데이트(자원, 품목명, 변동가격)
+
+        시세 = 시세_불러오기(자원)
+
+        변경시세 = 시세.get(품목명)
+        
+        변경_세트값 = 변경시세*64
+        이전_세트값 = 이전시세 *64
+
+        await interaction.response.send_message(f"__**{품목명}**__의 시세가 다음과 같이 시세가 변동되었습니다. \n- **변경 전**\n개당 __{이전시세}원__ / 세트 가격 __{format(이전_세트값, ',')}원__\n- **변경 후**\n개당 __{변경시세}원__ / 세트 가격 __{format(변경_세트값,',')}__")
+        
+        return
+    except Exception as e:
+        print(f"오류 발생: {e}")
+        await interaction.response.send_message("오류가 발생했습니다. 자세한 내용은 뵹뵹이가 확인 후 처리하겠습니다.", ephemeral=True)    
+    
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 async def 정산(interaction: discord.Interaction, 멤버 : discord.Member):
