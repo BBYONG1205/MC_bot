@@ -318,19 +318,17 @@ async def 시세_변동(interaction:discord.Interaction, 품목명 : str, 세트
 
     변동가격 = round(세트가격 / 64,3)
 
+
     이전시세값 = 시세_불러오기(자원)
+
 
     이전시세 = 이전시세값.get(품목명)
 
+    이전_세트값=이전시세 *64
+
     시세_업데이트(자원,품목명, 변동가격)
 
-    시세 = 시세_불러오기(자원)
-
-    변경시세 = 시세.get(품목명)
-
-    await interaction.response.send_message(f"다음과 같이 시세가 변동되었습니다. \n**{이전시세} → {변경시세}**")
-    return
-
+    await interaction.response.send_message(f"__**{품목명}**__의 시세가 다음과 같이 시세가 변동되었습니다. \n- **변경 전**\n개당 {이전시세}원 / 세트 가격 {format(round(이전_세트값), ',')}원\n- **변경 후**\n개당 {변동가격}원 / 세트 가격 {세트가격}원")
 #ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 async def 정산(interaction: discord.Interaction, 멤버 : discord.Member):
